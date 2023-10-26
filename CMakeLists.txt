@@ -13,7 +13,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(json)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/1)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/1)
+add_subdirectory(${PROJECT_SOURCE_DIR}/2)
 add_executable(tasks_exec main.cpp)
 
 target_link_libraries(tasks_exec PRIVATE nlohmann_json::nlohmann_json)
