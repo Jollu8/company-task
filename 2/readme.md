@@ -27,3 +27,15 @@
 - Helix is spatial and is defined by its radius and step (see the figure below). It takes 2 * PI in
   parametric space to make a round, i.e. any point on helix satisfies the condition C(t + 2*PI) = C(t) + {0, 0, step}.
 
+```
+   Cmake 3.19
+   C++ 20
+```
+
+# Как установить:
+
+- Склонируйте этот репозиторий
+- выполните команду:
+- `cd ./2`
+- `mkdir -p ./build && cd ./build && cmake ../ && make && ./n2`
+
