@@ -1,0 +1,30 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.23)
+SET(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
+SET(PROJECT_VERSION 0.0.${PATCH_VERSION})
+SET(MY_PROJECT_NAME n6)
+PROJECT(${MY_PROJECT_NAME} VERSION ${PROJECT_VERSION})
+
+
+
+
+ADD_EXECUTABLE(CTestArray main.cpp)
+
+
+
+SET_TARGET_PROPERTIES(CTestArray PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+)
+
+IF (MSVC)
+    TARGET_LINK_OPTIONS(CTestArray  PRIVATE
+            /W4
+    )
+
+
+else ()
+    target_compile_options(CTestArray PRIVATE
+            -Wall -Wextra -pedantic -Werror
+    )
+
+endif()

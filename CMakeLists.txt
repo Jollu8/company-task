@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/1)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/2)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/3)
-add_subdirectory(${PROJECT_SOURCE_DIR}/5)
+add_subdirectory(${PROJECT_SOURCE_DIR}/6)
 add_executable(tasks_exec main.cpp)
 
 #target_link_libraries(tasks_exec PRIVATE nlohmann_json::nlohmann_json)

@@ -32,5 +32,6 @@
 *.app
 .idea/
 cmake-build-debug/
+cmake-build-release/
 venv/
 
