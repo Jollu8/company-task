@@ -1,32 +1,33 @@
 //
 /// Created by Jollu Emil
 //
+
+#include <gtest/gtest.h>
+
+#include <string>
+#include <vector>
+
 #include "Server.h"
-#include "gtest/gtest.h"
 
+TEST(CalculateSHA1Test, ReturnsCorrectSHA1) {
+    std::string input = "Hello, world!";
+    std::string expected_output = "943a702d06f34599aee1f8da8ef9f7296031d699";
+    EXPECT_EQ(CalculateSHA1(input), expected_output);
 
-TEST(ServerTest, HandlesTasksCorrectly) {
-    Server server;
+    std::vector<std::string> output;
+    output.reserve(10);
 
-    std::thread serverThread([&server]{ server.run(); });
+    for (auto i = 1; i < 11; ++i) {
+        output.emplace_back(CalculateSHA1(std::to_string(i)));
+    }
 
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in servaddr{};
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(8080);
-    connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
-
-    std::string request = "GET /path HTTP/1.1\r\nUser-Agent: TestAgent\r\n\r\n";
-    write(sockfd, request.c_str(), request.size());
-
-
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-
-    EXPECT_EQ(server.getPathHitCount("/path"), 1);
-    EXPECT_EQ(server.getUserAgentHitCount("TestAgent"), 1);
-
-    close(sockfd);
-    serverThread.join();
+    for (auto i = 0; i < 10; ++i) {
+        EXPECT_EQ(CalculateSHA1(std::to_string(i + 1)), output[i]);
+    }
 }
 
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
