@@ -2,6 +2,8 @@
 // Created by Jollu Emil
 //
 
+// https://github.com/sfionov/dns-over-https-c-client ))
+
 #pragma once
 
 #include <netinet/in.h>
