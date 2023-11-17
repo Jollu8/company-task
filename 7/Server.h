@@ -130,7 +130,7 @@ void ProcessRequest(int client_socket, threadpool::Threadpool& pool,
             reqstr += buffer;
         }
         reqstr += buffer;
-        pool.Enqueue([&] {
+        pool.Enqueue([&]() {
             std::cout << reqstr << std::endl;
             // Calculate SHA1 and hitcount
             std::string pathSHA1 = CalculateSHA1(reqstr);
