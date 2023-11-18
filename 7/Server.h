@@ -2,7 +2,7 @@
 // Created by Jollu Emil
 //
 
-// https://github.com/sfionov/dns-over-https-c-client ))
+
 
 #pragma once
 
@@ -26,6 +26,7 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
+
 
 // SHA1
 std::string CalculateSHA1(const std::string& input) {
