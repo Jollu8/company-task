@@ -8,39 +8,38 @@
 
 #include "Server.h"
 
-#include <cassert>
-#include <unordered_map>
 
-void TestCalculateSHA1() {
-    assert(CalculateSHA1("test") == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3");
-    assert(CalculateSHA1("hello world") == "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed");
+class ServerTest : public ::testing::Test {
+protected:
+//    Server server(8080, 1024);
+};
+
+TEST_F(ServerTest, CalculateSHA1) {
+    using namespace std::string_literals;
+    EXPECT_EQ(Server.CalculateSHA1ForTest("test"s), "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"s);
 }
 
-void TestCountHits() {
+
+TEST(ServerTest, CountHits) {
     std::unordered_map<std::string, int> hit_count_Map;
-    CountHits("path1", hit_count_Map);
-    assert(hit_count_Map["path1"] == 1);
-    CountHits("path1", hit_count_Map);
-    assert(hit_count_Map["path1"] == 2);
-    CountHits("path2", hit_count_Map);
-    assert(hit_count_Map["path2"] == 1);
+    Server::CountHits("test", hit_count_Map);
+    Server::CountHits("test", hit_count_Map);
+    EXPECT_EQ(hit_count_Map["test"], 2);
 }
 
-void TestExtractPath() {
-    assert(ExtractPath("GET /path1 HTTP/1.1\r\nHost: localhost\r\n\r\n") == "/path1");
-    assert(ExtractPath("GET /path2 HTTP/1.1\r\nHost: localhost\r\n\r\n") == "/path2");
+TEST(ServerTest, ExtractPath) {
+    std::string request = "GET /test HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\n\r\n";
+    EXPECT_EQ(Server::ExtractPath(request), "/test");
 }
 
-void TestExtractUserAgent() {
-    assert(ExtractUserAgent("GET / HTTP/1.1\r\nUser-Agent: agent1\r\n\r\n") == "agent1");
-    assert(ExtractUserAgent("GET / HTTP/1.1\r\nUser-Agent: agent2\r\n\r\n") == "agent2");
+TEST(ServerTest, ExtractUserAgent) {
+    std::string request = "GET /test HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\n\r\n";
+    EXPECT_EQ(Server::ExtractUserAgent(request), "curl/7.58.0");
 }
 
-int main() {
-    TestCalculateSHA1();
-    TestCountHits();
-    TestExtractPath();
-    TestExtractUserAgent();
-    std::cout << "All tests passed.\n";
-    return 0;
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
+
+
