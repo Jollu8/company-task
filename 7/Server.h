@@ -26,7 +26,23 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
+#include <regex>
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <mutex>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
+#include <openssl/sha.h>
 
 // SHA1
 std::string CalculateSHA1(const std::string& input) {
@@ -91,8 +107,8 @@ public:
             if (m_stop_pool)
                 throw std::runtime_error("Enqueue on stopped ThreadPool");
             m_tasks.emplace([fn = std::forward<Fn>(fn), ... args = std::forward<Arg>(args)]() mutable {
-                std::invoke(std::forward<Fn>(fn), std::forward<Arg>(args)...);
-            });
+                    std::invoke(std::forward<Fn>(fn), std::forward<Arg>(args)...);
+                });
         }
         m_condition.notify_all();
     }
@@ -107,43 +123,88 @@ private:
 
 }  // namespace threadpool
 
+
+std::string ExtractPath(const std::string& request) {
+    std::regex path_regex(R"(GET\s(.*?)\sHTTP)");
+    std::smatch match;
+    if (std::regex_search(request, match, path_regex) && match.size() > 1) {
+        return match.str(1);
+    } else {
+        return {};
+    }
+}
+
+std::string ExtractUserAgent(const std::string& request) {
+    std::regex ua_regex(R"(User-Agent:\s(.*))");
+    std::smatch match;
+    if (std::regex_search(request, match, ua_regex) && match.size() > 1) {
+        return match.str(1);
+    } else {
+        return {};
+    }
+}
+
 void ProcessRequest(int client_socket, threadpool::Threadpool& pool,
                     std::unordered_map<std::string, int>& hit_count_Map) {
     char buffer[BUFFER_SIZE];
-    ssize_t bytes_received = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
+    std::string reqstr;
+    ssize_t bytes_received;
 
-    if (bytes_received > 0) {
-        buffer[bytes_received] = '\0';  // Null-terminate the received data
-        std::string reqstr("Received request:\n");
-        reqstr += buffer;
-
-        // Send a simple HTTP response
-        const char response[] = "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nqueued\n";
-
-        send(client_socket, response, sizeof(response), 0);
-
-        // Print the body of the request
-        reqstr += "Request body: ";
-        while (true) {
-            buffer[0] = '\0';
-            bytes_received = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
-            if (bytes_received <= 0)
-                break;
-            buffer[bytes_received] = '\0';
-            reqstr += buffer;
+    // Read from the socket until we find "\r\n\r\n"
+    while (reqstr.find("\r\n\r\n") == std::string::npos) {
+        bytes_received = recv(client_socket, buffer, BUFFER_SIZE - 1, 0);
+        if (bytes_received < 0) {
+            std::cerr << "Error reading from socket. " << std::endl;
+            close(client_socket);
+            return;
         }
+        if (bytes_received == 0) {
+            std::cerr << "Client closed connection. " << std::endl;
+            close(client_socket);
+            return;
+        }
+        buffer[bytes_received] = '\0';
         reqstr += buffer;
-        pool.Enqueue([&]() {
+    }
+
+    // Check if the request is a GET request
+    if (reqstr.substr(0, 3) != "GET") {
+        std::cerr << "Received non-GET request. Ignoring.\n";
+        close(client_socket);
+        return;
+    }
+
+    if (!reqstr.empty()) {
+        // Send a simple HTTP response
+        const char response[] = "HTTP/1.1 200 OK\r\nContent-Length: 7\r\nConnection: close\r\n\r\nqueued\n";
+        auto bytes_sent = send(client_socket, response, sizeof(response), 0);
+        if (bytes_sent < 0) {
+            std::cerr << "Error sending response. " << std::endl;
+            close(client_socket);
+            return;
+        }
+        if (bytes_sent < static_cast<ssize_t >(sizeof(response))) {
+            std::cerr << "Not all bytes sent. " << std::endl;
+            close(client_socket);
+            return;
+        }
+
+        // Extract path and User-Agent from the request
+        std::string path = ExtractPath(reqstr);
+        std::string userAgent = ExtractUserAgent(reqstr);
+
+        pool.Enqueue([&]{
             std::cout << reqstr << std::endl;
             // Calculate SHA1 and hitcount
-            std::string pathSHA1 = CalculateSHA1(reqstr);
-            std::string userAgentSHA1 = CalculateSHA1(reqstr);
-            CountHits(reqstr, hit_count_Map);
-            int path_Hit_count = hit_count_Map[reqstr];
-            int user_Agent_Hit_count = hit_count_Map[reqstr];
+            std::string pathSHA1 = CalculateSHA1(path);
+            std::string userAgentSHA1 = CalculateSHA1(userAgent);
+            CountHits(path, hit_count_Map);
+            CountHits(userAgent, hit_count_Map);
+            int path_Hit_count = hit_count_Map[path];
+            int user_Agent_Hit_count = hit_count_Map[userAgent];
             std::cout << "Thread ID: " << std::this_thread::get_id() << "\n";
-            std::cout << "Path: " << reqstr << ", SHA1: " << pathSHA1 << ", Hitcount: " << path_Hit_count << "\n";
-            std::cout << "User-Agent: " << reqstr << ", SHA1: " << userAgentSHA1
+            std::cout << "Path: " << path << ", SHA1: " << pathSHA1 << ", Hitcount: " << path_Hit_count << "\n";
+            std::cout << "User-Agent: " << userAgent << ", SHA1: " << userAgentSHA1
                       << ", Hitcount: " << user_Agent_Hit_count << "\n";
         });
     }
@@ -151,3 +212,5 @@ void ProcessRequest(int client_socket, threadpool::Threadpool& pool,
     // Close the client socket
     close(client_socket);
 }
+
+

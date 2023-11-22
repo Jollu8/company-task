@@ -15,7 +15,8 @@ int main() {
     sockaddr_in address{};
     int sock = 0;
     sockaddr_in serv_addr{};
-    char const *message = "GET / HTTP/1.1\r\n\r\n";
+    std::string message = "GET / HTTP/1.1\r\n\r\n";
+    [[maybe_unused]]std::string message_POST = "POST / HTTP/1.1\r\n\r\n"; //  it does wrong
     char buffer[1024] = {0};
 
     memset(&serv_addr, 0, sizeof(serv_addr));
@@ -39,7 +40,12 @@ int main() {
             return -1;
         }
 
-        send(sock, message, strlen(message), 0);
+        // Split the message into parts and send each part separately
+        for (size_t j = 0; j < message.size(); j += 10) {
+            std::string part = message.substr(j, 10);
+            send(sock, part.c_str(), part.size(), 0);
+        }
+
         std::cout << "GET request sent\n";
         if (read(sock, buffer, 1024) != -1)
             std::cout << buffer << std::endl;
@@ -47,6 +53,35 @@ int main() {
         close(sock);  // Close the socket after each request
     }
 
+
+    // wong client
+    {
+        std::cout << "=================Send Post=================" <<std::endl;
+        if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+            std::cerr << "\n Socket creation error \n";
+            return -1;
+        }
+        if (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+            std::cerr << "\nConnection Failed \n";
+            return -1;
+        }
+
+        // Split the message into parts and send each part separately
+        for (size_t j = 0; j < message_POST.size(); j += 10) {
+            std::string part = message_POST.substr(j, 10);
+            send(sock, part.c_str(), part.size(), 0);
+        }
+
+        std::cout << "GET request sent\n";
+        if (read(sock, buffer, 1024) != -1)
+            std::cout << buffer << std::endl;
+
+        close(sock);  // Close the socket after each request
+    }
+
+
+
     return 0;
 }
+
 
