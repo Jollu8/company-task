@@ -34,6 +34,7 @@
 namespace threadpool {
 class Threadpool final {
 public:
+    friend class ServerTest;
     explicit Threadpool(size_t threads_count) : m_stop_pool(false) {
         for (auto i = 0u; i < threads_count; ++i) {
             m_workers.emplace_back([this] {
@@ -112,6 +113,7 @@ public:
 
         std::cout << "Server listening on port: " << m_PORT << "..." << std::endl;
     }
+    Server() : Server(8080, 1024) {}
 
     ~Server() {
         close(m_server_socket);
@@ -233,7 +235,7 @@ private:
         }
     }
 
-    void ProcessData(int client_socket, threadpool::Threadpool& pool,
+    static void ProcessData(int client_socket, threadpool::Threadpool& pool,
                      std::unordered_map<std::string, int>& hit_count_Map, const std::string& path,
                      const std::string& userAgent) {
         pool.Enqueue([&] {
@@ -260,5 +262,5 @@ private:
     int m_server_socket;
     threadpool::Threadpool m_pool{5};
     std::unordered_map<std::string, int> m_hit_count_Map;
-    friend class ServerTest;
+
 };

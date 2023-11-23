@@ -12,8 +12,8 @@
 #define PORT 8080
 
 int main() {
-    sockaddr_in address{};
-    int sock = 0;
+    [[maybe_unused]] sockaddr_in address{};
+    int sock;
     sockaddr_in serv_addr{};
     std::string message = "GET / HTTP/1.1\r\n\r\n";
     [[maybe_unused]]std::string message_POST = "POST / HTTP/1.1\r\n\r\n"; //  it does wrong
