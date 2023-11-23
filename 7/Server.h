@@ -28,6 +28,8 @@
 #include <unordered_map>
 #include <vector>
 
+#define TEST_true
+
 // constexpr int PORT = 8080;
 // constexpr int BUFFER_SIZE = 1024;
 
@@ -89,6 +91,8 @@ private:
 
 class Server {
 public:
+
+
 
     Server(int port, int buffer_size) : m_PORT(port), m_BUFFER_SIZE(buffer_size) {
         m_server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -263,4 +267,12 @@ private:
     threadpool::Threadpool m_pool{5};
     std::unordered_map<std::string, int> m_hit_count_Map;
 
+#ifdef TEST_true
+    FRIEND_TEST(ServerTest, CalculateSHA1);
+    FRIEND_TEST(ServerTest, CountHits);
+    FRIEND_TEST(ServerTest, ExtractPath);
+    FRIEND_TEST(ServerTest, ExtractUserAgent);
+#endif
+
 };
+
