@@ -26,6 +26,7 @@ TEST_F(ServerTest, CountHits) {
     EXPECT_EQ(hit_count_Map["test"], 2);
 }
 
+
 TEST_F(ServerTest, ExtractPath) {
     std::string request = "GET /test HTTP/1.1\r\nHost: localhost:8080\r\nUser-Agent: curl/7.58.0\r\nAccept: */*\r\n\r\n";
     EXPECT_EQ(Server::ExtractPath(request), "/test");
