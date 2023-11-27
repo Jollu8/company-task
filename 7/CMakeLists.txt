@@ -49,9 +49,7 @@ TARGET_LINK_LIBRARIES(FullServer PRIVATE
 )
 
 ADD_EXECUTABLE(Client Client.cpp
-        server_full/include/Headers.h
-        server_full/include/Parse.h
-        server_full/include/Error.h)
+     )
 
 
 ADD_EXECUTABLE(Test  test.cpp Server.h)
