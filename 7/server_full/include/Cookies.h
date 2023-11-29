@@ -52,8 +52,8 @@ private:  // Fields
     std::string m_name;
     std::string m_value;
     std::string m_path;
-    bool m_httpOnly;
-    bool m_secure;
+    bool m_httpOnly{};
+    bool m_secure{};
 };
 
 
@@ -63,14 +63,7 @@ class Cookies {
 public:
     using Map = std::map<std::string, Cookie>;
 
-    [[nodiscard]] Cookie const &cookie(std::string const& name) const {
-        auto it = m_cookie.find(name);
-        if (it != m_cookie.end()) {
-            return it->second;
-        } else {
-            throw std::runtime_error("Cookie not found");
-        }
-    }
+    [[nodiscard]] Cookie cookie(std::string const& name) const;
 
     [[nodiscard]] auto begin() const noexcept {
         return m_cookie.begin();
@@ -80,9 +73,7 @@ public:
         return m_cookie.end();
     }
 
-    void cookieIs(Cookie const& cookie) {
-        m_cookie[cookie.name()] = cookie;
-    }
+    void cookieIs(Cookie const& cookie);
 
     static inline const std::string HOST ;
     static inline const std::string CONTENT_LENGTH ;
