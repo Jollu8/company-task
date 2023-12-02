@@ -43,7 +43,7 @@ static inline ParseResult<std::string> parseWhile(const char* str, F func) {
     return token;
 }
 
-[[maybe_unused]] static inline ParseResult<std::string> parseSrLf(const char* str) {
+[[maybe_unused]] static inline ParseResult<std::string> parseCrLf(const char* str) {
     auto ch = parseUntil(str, [](char ch) { return ch == '\r'; });
     if (*ch.ch == '\r')
         ch.ch++;

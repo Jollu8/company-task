@@ -35,7 +35,7 @@ public:  // Setters
     void methodsIs(Method method);
     void uriIs(Uri const& path);
     void dataIs(std::string const& data);
-    void headers(std::string const& name, std::string const& value);
+    void headerIs(std::string const& name, std::string const& value);
 
 private:
     Method m_method = GET;
